@@ -1,0 +1,22 @@
+{
+  "suppliers": [
+    {
+      "name": "Tianjin Zhenpin Zhiyuan Trading Co., Ltd",
+      "platform": "AliExpress",
+      "email": "email@gmail.com",
+      "phone": "3435",
+      "address": "Chine",
+      "id": "ae299cea-8049-47cd-b28d-9827116a3901",
+      "website": "https://www.alibaba.com/product-detail/High-Quality-Thick-Glass-Water-Bottles_1601368255327.html?spm=a27aq.29030638.3529342530.60.caf27f2dedE3s9"
+    },
+    {
+      "name": "Tianjin Zhenpin Zhiyuan Trading Co., Ltd",
+      "platform": "Amazon",
+      "email": "email@gmail.com",
+      "phone": "4576",
+      "address": "Chine",
+      "website": "https://www.alibaba.com/product-detail/High-Quality-Thick-Glass-Water-Bottles_1601368255327.html?spm=a27aq.29030638.3529342530.60.caf27f2dedE3s9",
+      "id": "cacf6df0-8561-4d61-aa86-03f0b7fcf59e"
+    }
+  ]
+}

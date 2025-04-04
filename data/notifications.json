@@ -1,0 +1,93 @@
+{
+  "notifications": [
+    {
+      "id": "1",
+      "type": "inventory_low",
+      "title": "Low Stock Alert",
+      "message": "Product 'Wireless Headphones' is running low on stock. Current quantity: 5 units",
+      "priority": "high",
+      "isRead": false,
+      "isArchived": false,
+      "createdAt": "2025-03-26T10:00:00.000Z",
+      "metadata": {
+        "productId": "prod_123",
+        "currentStock": 5,
+        "threshold": 10
+      }
+    },
+    {
+      "id": "2",
+      "type": "order_status",
+      "title": "New Order Received",
+      "message": "Order #12345 has been placed for $299.99",
+      "priority": "medium",
+      "isRead": false,
+      "isArchived": false,
+      "createdAt": "2025-03-26T09:45:00.000Z",
+      "actionUrl": "/orders/12345",
+      "metadata": {
+        "orderId": "12345",
+        "amount": 299.99,
+        "customerId": "cust_789"
+      }
+    },
+    {
+      "id": "3",
+      "type": "payment_due",
+      "title": "Payment Reminder",
+      "message": "Payment of $1,500 is due for supplier invoice #INV-456",
+      "priority": "urgent",
+      "isRead": false,
+      "isArchived": false,
+      "createdAt": "2025-03-26T08:30:00.000Z",
+      "expiresAt": "2025-03-29T00:00:00.000Z",
+      "metadata": {
+        "invoiceId": "INV-456",
+        "amount": 1500,
+        "dueDate": "2025-03-29"
+      }
+    },
+    {
+      "id": "4",
+      "type": "customer_loyalty",
+      "title": "Customer Milestone",
+      "message": "Customer John Doe has reached 1000 loyalty points!",
+      "priority": "low",
+      "isRead": false,
+      "isArchived": false,
+      "createdAt": "2025-03-26T07:15:00.000Z",
+      "actionUrl": "/customers/cust_789",
+      "metadata": {
+        "customerId": "cust_789",
+        "loyaltyPoints": 1000,
+        "milestone": "gold"
+      }
+    },
+    {
+      "id": "5",
+      "type": "delivery_update",
+      "title": "Package Delivered",
+      "message": "Order #12340 has been successfully delivered to the customer",
+      "priority": "medium",
+      "isRead": true,
+      "isArchived": false,
+      "createdAt": "2025-03-25T16:20:00.000Z",
+      "metadata": {
+        "orderId": "12340",
+        "trackingNumber": "TRK123456",
+        "deliveryDate": "2025-03-25T16:20:00.000Z"
+      }
+    },
+    {
+      "id": "6",
+      "type": "system_alert",
+      "title": "System Maintenance",
+      "message": "System maintenance scheduled for tonight at 2 AM. The system will be unavailable for approximately 30 minutes.",
+      "priority": "high",
+      "isRead": true,
+      "isArchived": true,
+      "createdAt": "2025-03-25T14:00:00.000Z",
+      "expiresAt": "2025-03-26T03:00:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "forwarders": [
+    {
+      "name": "Freight forwarders 1",
+      "contactPerson": "069000000",
+      "email": "email@gmail.com",
+      "phone": "069395024",
+      "depotAddress": "Adresse",
+      "transportModes": [
+        "sea",
+        "air"
+      ],
+      "id": "d3c8753a-7890-49e7-bd1c-6091c036448f",
+      "createdAt": "2025-03-26T07:41:29.700Z",
+      "updatedAt": "2025-03-30T15:23:08.975Z"
+    }
+  ]
+}

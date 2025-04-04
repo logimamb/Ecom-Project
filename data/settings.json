@@ -1,0 +1,22 @@
+{
+  "businessInfo": {
+    "name": "",
+    "email": "",
+    "phone": "",
+    "address": "",
+    "currency": "XAF",
+    "language": "fr"
+  },
+  "notifications": {
+    "email": false,
+    "browser": true,
+    "lowStock": true,
+    "newOrders": true,
+    "paymentReminders": true
+  },
+  "appearance": {
+    "theme": "system",
+    "density": "comfortable",
+    "sidebarCollapsed": false
+  }
+}

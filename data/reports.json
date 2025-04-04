@@ -1,0 +1,72 @@
+{
+  "reports": [
+    {
+      "id": "1",
+      "title": "Monthly Sales Report",
+      "description": "Overview of sales performance for the current month",
+      "type": "sales",
+      "status": "completed",
+      "createdAt": "2025-03-01T00:00:00.000Z",
+      "updatedAt": "2025-03-01T00:00:00.000Z",
+      "metrics": {
+        "totalSales": 15000,
+        "orders": 150,
+        "averageOrderValue": 100,
+        "conversionRate": 2.5
+      },
+      "period": "March 2025",
+      "author": "System"
+    },
+    {
+      "id": "2",
+      "title": "Inventory Status Report",
+      "description": "Current inventory levels and alerts",
+      "type": "inventory",
+      "status": "completed",
+      "createdAt": "2025-03-15T00:00:00.000Z",
+      "updatedAt": "2025-03-15T00:00:00.000Z",
+      "metrics": {
+        "totalItems": 500,
+        "lowStock": 15,
+        "outOfStock": 5,
+        "stockValue": 45000
+      },
+      "period": "March 2025",
+      "author": "System"
+    },
+    {
+      "id": "3",
+      "title": "Customer Analytics",
+      "description": "Customer behavior and segmentation analysis",
+      "type": "customers",
+      "status": "in-progress",
+      "createdAt": "2025-03-20T00:00:00.000Z",
+      "updatedAt": "2025-03-20T00:00:00.000Z",
+      "metrics": {
+        "totalCustomers": 300,
+        "newCustomers": 45,
+        "repeatRate": 35,
+        "averageLTV": 250
+      },
+      "period": "Q1 2025",
+      "author": "System"
+    },
+    {
+      "id": "4",
+      "title": "Financial Performance",
+      "description": "Revenue, costs, and profitability analysis",
+      "type": "financial",
+      "status": "draft",
+      "createdAt": "2025-03-25T00:00:00.000Z",
+      "updatedAt": "2025-03-25T00:00:00.000Z",
+      "metrics": {
+        "revenue": 15000,
+        "costs": 10000,
+        "profit": 5000,
+        "margin": 33.33
+      },
+      "period": "Q1 2025",
+      "author": "System"
+    }
+  ]
+}
