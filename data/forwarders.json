@@ -1,18 +1,18 @@
 {
   "forwarders": [
     {
-      "name": "Freight forwarders 1",
-      "contactPerson": "069000000",
-      "email": "email@gmail.com",
-      "phone": "069395024",
-      "depotAddress": "Adresse",
+      "name": "ISA LOGISTICS IMPORT-EXPORTCO.LTD",
+      "contactPerson": "+86 131 4350 4441",
+      "email": "isalogistic15@gmail.com",
+      "phone": "+86 131 4350 4441",
+      "depotAddress": "511, Block A, Lianming Commercial Center, No.20 Songbai East Street, Guangyuan Middle Road, Baiyun District, Guangzhou.\n\n广州市白云区广园中路松柏东街20号联鸣商贸中心A座511房.\n收货人: ISA转客户名称\n手机号码: 13143504441\n\n注意：发货前请写清楚客户名称，电话，国家，城市（麦头)",
       "transportModes": [
         "sea",
         "air"
       ],
-      "id": "d3c8753a-7890-49e7-bd1c-6091c036448f",
-      "createdAt": "2025-03-26T07:41:29.700Z",
-      "updatedAt": "2025-03-30T15:23:08.975Z"
+      "id": "1923f688-ef13-4f17-8279-79f5379c4caf",
+      "createdAt": "2025-04-11T06:36:20.728Z",
+      "updatedAt": "2025-04-11T06:38:26.905Z"
     }
   ]
 }

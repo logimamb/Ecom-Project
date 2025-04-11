@@ -48,7 +48,11 @@ export default function InventoryPage() {
   const [sortField, setSortField] = useState<keyof InventoryItem>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
-  const { format: formatCurrency } = useCurrency();
+  const { format } = useCurrency();
+
+  const formatPrice = (price: number) => {
+    return format(price, 'XAF'); // Assuming old values were in XAF
+  };
 
   useEffect(() => {
     fetchInventory();
@@ -309,13 +313,23 @@ export default function InventoryPage() {
                   <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
               </TableHead>
+              <TableHead>
+                <Button
+                  variant="ghost"
+                  onClick={() => handleSort("price")}
+                  className="flex items-center"
+                >
+                  Price
+                  <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+              </TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredAndSortedItems.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center">
+                <TableCell colSpan={10} className="h-24 text-center">
                   No items found.
                 </TableCell>
               </TableRow>
@@ -352,6 +366,13 @@ export default function InventoryPage() {
                         ? new Date(item.lastRestocked).toLocaleDateString()
                         : "—"
                       }
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        formatPrice(item.price)
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -448,7 +469,7 @@ export default function InventoryPage() {
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm col-span-3">
             <h4 className="text-sm font-medium mb-2">Total Value</h4>
-            <p className="text-lg font-bold">{formatCurrency(totalValue)}</p>
+            <p className="text-lg font-bold">{formatPrice(totalValue)}</p>
           </div>
         </div>
       </div>

@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
-import * as salesDb from "@/lib/db/sales";
-import { saleSchema } from "@/lib/validations/sale";
+import { promises as fs } from "fs";
+import path from "path";
 
 export async function GET() {
   try {
-    const sales = await salesDb.getAll();
+    const salesPath = path.join(process.cwd(), "data", "sales.json");
+    const salesData = await fs.readFile(salesPath, "utf8");
+    const { sales } = JSON.parse(salesData);
+
     return NextResponse.json({ sales });
   } catch (error) {
-    console.error("Error fetching sales:", error);
+    console.error("Error reading sales:", error);
     return NextResponse.json(
       { error: "Failed to fetch sales" },
       { status: 500 }
@@ -17,18 +20,25 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const salesPath = path.join(process.cwd(), "data", "sales.json");
+    const salesData = await fs.readFile(salesPath, "utf8");
+    const { sales } = JSON.parse(salesData);
     const data = await request.json();
-    const validationResult = saleSchema.safeParse(data);
 
-    if (!validationResult.success) {
-      return NextResponse.json(
-        { error: "Invalid sale data", details: validationResult.error },
-        { status: 400 }
-      );
-    }
+    const newSale = {
+      ...data,
+      id: crypto.randomUUID(),
+      total: data.items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitPrice), 0),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
 
-    const sale = await salesDb.create(validationResult.data);
-    return NextResponse.json({ sale }, { status: 201 });
+    await fs.writeFile(
+      salesPath,
+      JSON.stringify({ sales: [...sales, newSale] }, null, 2)
+    );
+
+    return NextResponse.json({ sale: newSale }, { status: 201 });
   } catch (error) {
     console.error("Error creating sale:", error);
     return NextResponse.json(
@@ -50,7 +60,11 @@ export async function PUT(request: Request) {
     }
 
     // Update all sales with converted currency values
-    await salesDb.updateMany(sales);
+    const salesPath = path.join(process.cwd(), "data", "sales.json");
+    await fs.writeFile(
+      salesPath,
+      JSON.stringify({ sales }, null, 2)
+    );
 
     return NextResponse.json({ message: "Sales updated successfully" });
   } catch (error) {

@@ -17,7 +17,7 @@ export function useCurrencyConverter() {
   const [loading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const convertCurrency = useCallback(async (amount: number, from: string, to: string): Promise<number> => {
+  const convertCurrency = useCallback((amount: number, from: string, to: string): number => {
     try {
       if (from === to) return amount;
       

@@ -71,6 +71,8 @@ interface Product {
   quantity: number;
 }
 
+type SortableFields = keyof (Omit<Sale, "items"> & LegacySale) | "total";
+
 export default function SalesPage() {
   const router = useRouter();
   const [sales, setSales] = useState<AnySale[]>([]);
@@ -79,24 +81,48 @@ export default function SalesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [sortField, setSortField] = useState<keyof AnySale>("createdAt");
+  const [sortField, setSortField] = useState<SortableFields>("createdAt");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const { toast } = useToast();
-  const { format: formatCurrency } = useCurrency();
+  const { format } = useCurrency();
 
   useEffect(() => {
-    const fetchSales = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch("/api/sales");
-        const data = await response.json();
-        if (data.sales) {
-          setSales(data.sales);
+        const [salesRes, customersRes, inventoryRes] = await Promise.all([
+          fetch("/api/sales"),
+          fetch("/api/customers"),
+          fetch("/api/inventory")
+        ]);
+
+        const salesData = await salesRes.json();
+        const customersData = await customersRes.json();
+        const inventoryData = await inventoryRes.json();
+
+        if (salesData.sales) {
+          setSales(salesData.sales);
+        }
+
+        if (customersData.customers) {
+          const customerMap = customersData.customers.reduce((acc: { [key: string]: Customer }, customer: Customer) => {
+            acc[customer.id] = customer;
+            return acc;
+          }, {});
+          setCustomers(customerMap);
+        }
+
+        if (inventoryData.inventory) {
+          const productMap = inventoryData.inventory.reduce((acc: { [key: string]: Product }, product: Product) => {
+            acc[product.id] = product;
+            return acc;
+          }, {});
+          setProducts(productMap);
         }
       } catch (error) {
-        console.error("Error fetching sales:", error);
+        console.error("Error fetching data:", error);
         toast({
           title: "Error",
-          description: "Failed to load sales",
+          description: "Failed to load data",
           variant: "destructive",
         });
       } finally {
@@ -104,51 +130,7 @@ export default function SalesPage() {
       }
     };
 
-    const fetchCustomers = async () => {
-      try {
-        const response = await fetch("/api/customers");
-        const data = await response.json();
-        if (data.customers) {
-          const customerMap = data.customers.reduce((acc: { [key: string]: Customer }, customer: Customer) => {
-            acc[customer.id] = customer;
-            return acc;
-          }, {});
-          setCustomers(customerMap);
-        }
-      } catch (error) {
-        console.error("Error fetching customers:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load customers",
-          variant: "destructive",
-        });
-      }
-    };
-
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch("/api/inventory");
-        const data = await response.json();
-        if (data.inventory) {
-          const productMap = data.inventory.reduce((acc: { [key: string]: Product }, product: Product) => {
-            acc[product.id] = product;
-            return acc;
-          }, {});
-          setProducts(productMap);
-        }
-      } catch (error) {
-        console.error("Error fetching products:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load products",
-          variant: "destructive",
-        });
-      }
-    };
-
-    fetchSales();
-    fetchCustomers();
-    fetchProducts();
+    fetchData();
   }, [toast]);
 
   const getStatusColor = (status: string): string => {
@@ -162,7 +144,7 @@ export default function SalesPage() {
     return colors[status] || "gray";
   };
 
-  const handleSort = (field: keyof AnySale) => {
+  const handleSort = (field: SortableFields) => {
     if (field === sortField) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -175,11 +157,14 @@ export default function SalesPage() {
     return "amount" in sale && "platform" in sale;
   };
 
-  const getSaleAmount = (sale: AnySale): string => {
-    if (isLegacySale(sale)) {
-      return formatCurrency(parseFloat(sale.amount));
+  const formatAmount = (sale: AnySale) => {
+    if ('total' in sale) {
+      // New sale format
+      return format(sale.total, 'XAF'); // Assuming old values were in XAF
+    } else {
+      // Legacy sale format
+      return format(parseFloat(sale.amount), 'XAF'); // Assuming old values were in XAF
     }
-    return formatCurrency(sale.total);
   };
 
   const getItemsDisplay = (sale: AnySale): string => {
@@ -187,6 +172,15 @@ export default function SalesPage() {
       return "1 item";
     }
     return `${sale.items.length} items`;
+  };
+
+  const getProductsDisplay = (sale: AnySale): string => {
+    if (isLegacySale(sale)) {
+      return "N/A";
+    }
+    return sale.items
+      .map(item => products[item.productId]?.name || "Unknown")
+      .join(", ");
   };
 
   const filteredAndSortedSales = sales
@@ -198,8 +192,14 @@ export default function SalesPage() {
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
-      const aValue = a[sortField];
-      const bValue = b[sortField];
+      if (sortField === "total") {
+        const aTotal = isLegacySale(a) ? parseFloat(a.amount) : a.total;
+        const bTotal = isLegacySale(b) ? parseFloat(b.amount) : b.total;
+        return sortDirection === "asc" ? aTotal - bTotal : bTotal - aTotal;
+      }
+
+      const aValue = (a as any)[sortField];
+      const bValue = (b as any)[sortField];
       const direction = sortDirection === "asc" ? 1 : -1;
       return direction * ((aValue ?? "") > (bValue ?? "") ? 1 : -1);
     });
@@ -239,7 +239,7 @@ export default function SalesPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
+            <div className="text-2xl font-bold">{format(totalRevenue, 'XAF')}</div>
           </CardContent>
         </Card>
 
@@ -316,7 +316,7 @@ export default function SalesPage() {
                   <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
               </TableHead>
-              <TableHead>Order ID</TableHead>
+              <TableHead>Products</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Items</TableHead>
               <TableHead>
@@ -347,10 +347,16 @@ export default function SalesPage() {
                   <TableCell>
                     {new Date(sale.createdAt).toLocaleDateString()}
                   </TableCell>
-                  <TableCell className="font-medium">{sale.id}</TableCell>
+                  <TableCell>{getProductsDisplay(sale)}</TableCell>
                   <TableCell>{customers[sale.customerId]?.name || "Unknown"}</TableCell>
                   <TableCell>{getItemsDisplay(sale)}</TableCell>
-                  <TableCell>{getSaleAmount(sale)}</TableCell>
+                  <TableCell className="text-right">
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      formatAmount(sale)
+                    )}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={getStatusColor(sale.status) as any}>
                       {sale.status}

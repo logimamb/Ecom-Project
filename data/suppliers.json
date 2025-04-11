@@ -1,22 +1,26 @@
 {
   "suppliers": [
     {
-      "name": "Tianjin Zhenpin Zhiyuan Trading Co., Ltd",
-      "platform": "AliExpress",
-      "email": "email@gmail.com",
-      "phone": "3435",
-      "address": "Chine",
-      "id": "ae299cea-8049-47cd-b28d-9827116a3901",
-      "website": "https://www.alibaba.com/product-detail/High-Quality-Thick-Glass-Water-Bottles_1601368255327.html?spm=a27aq.29030638.3529342530.60.caf27f2dedE3s9"
+      "name": "Jiaozuo Daan Daily Chemical Co., Ltd.",
+      "platform": "Alibaba",
+      "email": "16627992758@163.com",
+      "phone": "86-0391-16627992758",
+      "address": "No. 219, Industrial South Road, Jiaozuo, Henan, China",
+      "website": "https://jzdarh88.en.alibaba.com/index.html?",
+      "id": "a7683fa4-6d89-4748-8aac-420d0bfadcfb",
+      "createdAt": "2025-04-11T06:48:49.751Z",
+      "updatedAt": "2025-04-11T07:17:05.850Z"
     },
     {
-      "name": "Tianjin Zhenpin Zhiyuan Trading Co., Ltd",
-      "platform": "Amazon",
-      "email": "email@gmail.com",
-      "phone": "4576",
-      "address": "Chine",
-      "website": "https://www.alibaba.com/product-detail/High-Quality-Thick-Glass-Water-Bottles_1601368255327.html?spm=a27aq.29030638.3529342530.60.caf27f2dedE3s9",
-      "id": "cacf6df0-8561-4d61-aa86-03f0b7fcf59e"
+      "name": "Shenzhen Fengtong Technology Co., Ltd.",
+      "platform": "Alibaba",
+      "email": "313565530@qq.com",
+      "phone": "86-0755-2134",
+      "address": "9l, Cai World Home, No. 6, Donghu Road, Donghu Community, Cuipeng Community, Luohu Street, Shenzhen, Guangdong, China",
+      "website": "https://fengtong.en.alibaba.com/",
+      "id": "fc8eb188-ab02-4a0c-931f-18c9728ccf8d",
+      "createdAt": "2025-04-11T07:15:12.103Z",
+      "updatedAt": "2025-04-11T07:16:30.140Z"
     }
   ]
 }

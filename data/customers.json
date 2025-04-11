@@ -1,76 +1,19 @@
 {
   "customers": [
     {
-      "name": "Loic GIORGIO Edit",
-      "email": "giorgioloic@gmail.com",
-      "phone": "+86 23933253252",
-      "address": "sdsfsafsa",
+      "name": "sdfdsfdsf",
+      "email": "adsada@sfa.cds",
+      "phone": "3453665442",
+      "address": "safsaff",
       "segment": "new",
-      "notes": "",
-      "totalOrders": 2,
-      "totalSpent": 0,
-      "loyaltyPoints": 4,
-      "createdAt": "2025-03-25T19:02:26.837Z",
-      "updatedAt": "2025-03-26T09:43:43.219Z",
-      "id": "46b05a0e-ca66-4b28-b54b-63d8fc07650f"
-    },
-    {
-      "name": "Suivi de visage",
-      "email": "email@gmail.com",
-      "phone": "+86 23933253252",
-      "address": "sfsfsd",
-      "segment": "new",
-      "notes": "",
-      "totalOrders": 1,
-      "totalSpent": 75000,
-      "loyaltyPoints": 0,
-      "createdAt": "2025-03-25T19:16:21.760Z",
-      "updatedAt": "2025-03-26T09:53:10.421Z",
-      "id": "ef298870-bf80-41ce-b680-29fa9228fc6b"
-    },
-    {
-      "name": "Loic",
-      "email": "loic@gmail.com",
-      "phone": "069395024",
-      "address": "Pointe-Noire",
-      "segment": "new",
-      "notes": "Test",
-      "totalOrders": 1,
+      "notes": "asdds",
+      "totalOrders": 0,
       "totalSpent": 0,
       "loyaltyPoints": 0,
-      "createdAt": "2025-03-26T09:38:24.094Z",
-      "updatedAt": "2025-03-26T09:43:51.404Z",
-      "id": "6ee86e68-86ca-4c0f-9217-179ade55bb1c"
-    },
-    {
-      "name": "The test Name Edit",
-      "email": "test@gmail.com",
-      "phone": "123456789",
-      "address": "Address",
-      "segment": "new",
-      "notes": "The note",
-      "totalOrders": 1,
-      "totalSpent": 5000,
-      "loyaltyPoints": 2,
-      "createdAt": "2025-04-04T06:48:53.916Z",
-      "updatedAt": "2025-04-04T06:49:08.992Z",
-      "id": "87fe73c3-2b0a-4efa-93fb-818677cae7d9"
+      "createdAt": "2025-04-11T07:52:14.972Z",
+      "updatedAt": "2025-04-11T07:52:14.972Z",
+      "id": "ff299e9b-b836-4cdb-ac0e-38f367ddc310"
     }
   ],
-  "loyaltyPointsHistory": [
-    {
-      "id": "25acb7a0-1d6c-4acc-ae98-e17021c49e86",
-      "customerId": "46b05a0e-ca66-4b28-b54b-63d8fc07650f",
-      "points": 4,
-      "reason": "Regular",
-      "timestamp": "2025-03-26T09:48:38.006Z"
-    },
-    {
-      "id": "91f468c2-ad27-4cd5-9290-e5686907c677",
-      "customerId": "87fe73c3-2b0a-4efa-93fb-818677cae7d9",
-      "points": 2,
-      "reason": "The reason",
-      "timestamp": "2025-04-04T06:49:32.658Z"
-    }
-  ]
+  "loyaltyPointsHistory": []
 }

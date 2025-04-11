@@ -59,7 +59,7 @@ export const defaultSettings: Settings = {
 interface SettingsContextType {
   settings: Settings;
   isLoading: boolean;
-  updateSettings: (newSettings: Settings) => Promise<boolean>;
+  updateSettings: (newSettings: Settings, shouldConvertValues?: boolean) => Promise<boolean>;
   formatCurrency: (amount: number) => string;
   convertCurrency: (amount: number, from: string, to: string) => Promise<number>;
   convertAndFormatCurrency: (amount: number, fromCurrency: string) => Promise<string>;
@@ -80,10 +80,32 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const { convertCurrency: convert, formatCurrency: format } = useCurrencyConverter();
 
-  const updateSettings = async (newSettings: Settings) => {
+  const updateSettings = async (newSettings: Settings, shouldConvertValues: boolean = false) => {
     try {
-      // Save to API
-      const response = await fetch('/api/settings', {
+      const oldCurrency = settings.businessInfo.currency;
+      const newCurrency = newSettings.businessInfo.currency;
+
+      // If currency is changing and conversion is requested
+      if (shouldConvertValues && oldCurrency !== newCurrency) {
+        // Convert all monetary values in the database
+        const response = await fetch('/api/settings/convert-currency', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fromCurrency: oldCurrency,
+            toCurrency: newCurrency,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to convert currency values');
+        }
+      }
+
+      // Save settings
+      const saveResponse = await fetch('/api/settings', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +113,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(newSettings),
       });
 
-      if (!response.ok) {
+      if (!saveResponse.ok) {
         throw new Error('Failed to update settings');
       }
 
@@ -119,41 +141,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Initialize settings from localStorage and keep them in sync
-  useEffect(() => {
-    const loadSettings = () => {
-      const storedSettings = localStorage.getItem('settings');
-      if (storedSettings) {
-        try {
-          const parsedSettings = JSON.parse(storedSettings);
-          setSettings(prevSettings => ({
-            ...prevSettings,
-            ...parsedSettings,
-            businessInfo: {
-              ...prevSettings.businessInfo,
-              ...parsedSettings.businessInfo,
-            },
-          }));
-        } catch (error) {
-          console.error('Error parsing stored settings:', error);
-        }
-      }
-    };
-
-    // Load initial settings
-    loadSettings();
-
-    // Listen for changes in other tabs/windows
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'settings' && event.newValue) {
-        loadSettings();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
   // Format currency using the current business currency
   const formatCurrency = useCallback((amount: number): string => {
     if (typeof amount !== 'number' || isNaN(amount)) {
@@ -162,14 +149,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     return format(amount, settings.businessInfo.currency);
   }, [format, settings.businessInfo.currency]);
 
-  // Convert currency from USD to business currency
-  const convertAndFormatCurrency = useCallback(async (amount: number, fromCurrency: string = 'USD'): Promise<string> => {
+  // Convert and format currency
+  const convertAndFormatCurrency = useCallback(async (amount: number, fromCurrency: string): Promise<string> => {
     try {
       const convertedAmount = await convert(amount, fromCurrency, settings.businessInfo.currency);
       return format(convertedAmount, settings.businessInfo.currency);
     } catch (error) {
       console.error('Error converting currency:', error);
-      return format(amount, fromCurrency);
+      return format(amount, settings.businessInfo.currency);
     }
   }, [convert, format, settings.businessInfo.currency]);
 
@@ -211,6 +198,40 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
     fetchSettings();
   }, [toast]);
+
+  useEffect(() => {
+    const loadSettings = () => {
+      const storedSettings = localStorage.getItem('settings');
+      if (storedSettings) {
+        try {
+          const parsedSettings = JSON.parse(storedSettings);
+          setSettings(prevSettings => ({
+            ...prevSettings,
+            ...parsedSettings,
+            businessInfo: {
+              ...prevSettings.businessInfo,
+              ...parsedSettings.businessInfo,
+            },
+          }));
+        } catch (error) {
+          console.error('Error parsing stored settings:', error);
+        }
+      }
+    };
+
+    // Load initial settings
+    loadSettings();
+
+    // Listen for changes in other tabs/windows
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'settings' && event.newValue) {
+        loadSettings();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   return (
     <SettingsContext.Provider

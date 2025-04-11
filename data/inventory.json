@@ -1,34 +1,48 @@
 {
   "inventory": [
     {
-      "id": "a10a4cae-10a3-41d1-9ab3-3cf55df74230",
-      "name": "Product 1",
-      "sku": "345",
-      "description": "A high-quality clothing item",
-      "category": "Clothing",
-      "price": 0,
-      "quantity": 10,
-      "reorderPoint": 18,
-      "supplier": "Supplier 1",
-      "location": "Pointe-Noire",
-      "notes": "Note for this product",
-      "lastRestocked": "2025-03-26T08:52:35.139Z",
-      "cost": 0
+      "id": "prod_1",
+      "name": "Daan Hair Shampoo",
+      "sku": "DHS001",
+      "price": 25000,
+      "quantity": 100,
+      "category": "Hair Care",
+      "supplierId": "a7683fa4-6d89-4748-8aac-420d0bfadcfb",
+      "createdAt": "2025-04-11T08:00:00Z",
+      "updatedAt": "2025-04-11T08:00:00Z"
     },
     {
-      "id": "9b301833-2078-4bd0-bc02-8e652ab30772",
-      "name": "Product 2",
-      "sku": "564",
-      "description": "Fresh food product",
-      "category": "Food",
-      "price": 0,
-      "quantity": 10,
-      "reorderPoint": 30,
-      "supplier": "Supplier 2",
-      "location": "Warehouse A",
-      "notes": "Keep refrigerated",
-      "lastRestocked": "2025-03-26T08:53:49.014Z",
-      "cost": 0
+      "id": "prod_2",
+      "name": "Fengtong Smart Watch",
+      "sku": "FSW002",
+      "price": 49999,
+      "quantity": 75,
+      "category": "Electronics",
+      "supplierId": "fc8eb188-ab02-4a0c-931f-18c9728ccf8d",
+      "createdAt": "2025-04-11T08:00:00Z",
+      "updatedAt": "2025-04-11T08:00:00Z"
+    },
+    {
+      "id": "prod_3",
+      "name": "Daan Hair Conditioner",
+      "sku": "DHC003",
+      "price": 22000,
+      "quantity": 85,
+      "category": "Hair Care",
+      "supplierId": "a7683fa4-6d89-4748-8aac-420d0bfadcfb",
+      "createdAt": "2025-04-11T08:00:00Z",
+      "updatedAt": "2025-04-11T08:00:00Z"
+    },
+    {
+      "id": "prod_4",
+      "name": "Fengtong Wireless Earbuds",
+      "sku": "FWE004",
+      "price": 35000,
+      "quantity": 50,
+      "category": "Electronics",
+      "supplierId": "fc8eb188-ab02-4a0c-931f-18c9728ccf8d",
+      "createdAt": "2025-04-11T08:00:00Z",
+      "updatedAt": "2025-04-11T08:00:00Z"
     }
   ]
 }

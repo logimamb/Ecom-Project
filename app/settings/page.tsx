@@ -105,21 +105,21 @@ export default function SettingsPage() {
         },
       };
 
-      // Save settings
-      await updateSettings(newSettings);
+      // Update settings with currency conversion
+      await updateSettings(newSettings, true);
 
       // Update local state
       setLocalSettings(newSettings);
 
       toast({
         title: 'Currency Updated',
-        description: `Default currency has been changed to ${newCurrency}`,
+        description: `Currency has been changed to ${newCurrency} and all values have been converted`,
       });
 
       // Reload the page after a short delay to ensure settings are saved
       setTimeout(() => {
         window.location.reload();
-      }, 500);
+      }, 1000);
     } catch (error) {
       console.error('Error updating currency:', error);
       toast({

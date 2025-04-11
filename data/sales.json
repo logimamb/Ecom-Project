@@ -1,95 +1,21 @@
 {
   "sales": [
     {
-      "customerId": "46b05a0e-ca66-4b28-b54b-63d8fc07650f",
+      "customerId": "ff299e9b-b836-4cdb-ac0e-38f367ddc310",
       "items": [
         {
-          "productId": "a10a4cae-10a3-41d1-9ab3-3cf55df74230",
-          "quantity": 3,
-          "unitPrice": 29.99
-        }
-      ],
-      "status": "pending",
-      "paymentMethod": "cash",
-      "notes": "The note",
-      "id": "8c06070e-6341-41ea-815f-e00b1815f778",
-      "total": 0,
-      "createdAt": "2025-03-26T09:28:19.831Z",
-      "updatedAt": "2025-03-28T06:14:05.638Z",
-      "amount": 0,
-      "unitPrice": 0
-    },
-    {
-      "customerId": "6ee86e68-86ca-4c0f-9217-179ade55bb1c",
-      "items": [
-        {
-          "productId": "9b301833-2078-4bd0-bc02-8e652ab30772",
+          "productId": "prod_1",
           "quantity": 1,
-          "unitPrice": 15.99
-        }
-      ],
-      "status": "shipped",
-      "paymentMethod": "card",
-      "notes": "sdggf",
-      "id": "ed55942b-180b-45fe-b1b7-8d4f0aa09105",
-      "total": 0,
-      "createdAt": "2025-03-26T09:38:59.523Z",
-      "updatedAt": "2025-03-28T06:14:05.639Z",
-      "amount": 0,
-      "unitPrice": 0
-    },
-    {
-      "customerId": "46b05a0e-ca66-4b28-b54b-63d8fc07650f",
-      "items": [
-        {
-          "productId": "9b301833-2078-4bd0-bc02-8e652ab30772",
-          "quantity": 1,
-          "unitPrice": 15.99
-        }
-      ],
-      "status": "paid",
-      "paymentMethod": "bank_transfer",
-      "notes": "Test note",
-      "id": "d73b807e-034b-4db2-9947-c77778022ab7",
-      "total": 0,
-      "createdAt": "2025-03-26T09:54:40.559Z",
-      "updatedAt": "2025-03-28T06:14:05.639Z",
-      "amount": 0,
-      "unitPrice": 0
-    },
-    {
-      "customerId": "ef298870-bf80-41ce-b680-29fa9228fc6b",
-      "items": [
-        {
-          "productId": "9b301833-2078-4bd0-bc02-8e652ab30772",
-          "quantity": 3,
           "unitPrice": 25000
         }
       ],
-      "status": "shipped",
-      "paymentMethod": "cash",
-      "notes": "The note",
-      "id": "15ee213f-7b71-4037-a890-b46d1d162baf",
-      "total": 75000,
-      "createdAt": "2025-04-04T06:26:50.014Z",
-      "updatedAt": "2025-04-04T06:26:50.014Z"
-    },
-    {
-      "customerId": "87fe73c3-2b0a-4efa-93fb-818677cae7d9",
-      "items": [
-        {
-          "productId": "a10a4cae-10a3-41d1-9ab3-3cf55df74230",
-          "quantity": 1,
-          "unitPrice": 5000
-        }
-      ],
       "status": "pending",
       "paymentMethod": "cash",
-      "notes": "The note",
-      "id": "da71b2a8-7e9c-4d42-b01a-e294103b0945",
-      "total": 5000,
-      "createdAt": "2025-04-04T06:51:06.543Z",
-      "updatedAt": "2025-04-04T06:51:06.543Z"
+      "notes": "Note",
+      "id": "7d324c9b-c279-4de6-b77c-4be39220424c",
+      "total": 25000,
+      "createdAt": "2025-04-11T08:02:56.077Z",
+      "updatedAt": "2025-04-11T08:02:56.077Z"
     }
   ]
 }
