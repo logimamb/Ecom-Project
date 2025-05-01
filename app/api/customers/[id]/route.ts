@@ -59,19 +59,22 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const deleted = await db.customers.delete(params.id)
-    if (!deleted) {
+    const customer = await db.customers.findById(params.id);
+    if (!customer) {
       return NextResponse.json(
         { error: "Customer not found" },
         { status: 404 }
-      )
+      );
     }
-    return new NextResponse(null, { status: 204 })
+
+    await db.customers.delete(params.id);
+
+    return NextResponse.json({ message: "Customer deleted successfully" });
   } catch (error) {
-    console.error("Error deleting customer:", error)
+    console.error("Error deleting customer:", error);
     return NextResponse.json(
       { error: "Failed to delete customer" },
       { status: 500 }
-    )
+    );
   }
 }

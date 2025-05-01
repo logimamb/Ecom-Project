@@ -19,8 +19,18 @@ import { useToast } from "@/components/ui/use-toast";
 import { PageHeader } from '@/components/page-header';
 import { useCustomers } from '@/hooks/use-customers';
 import { DataTable } from '@/components/ui/data-table';
-import { columns } from './columns';
+import { createColumns } from './columns';
 import { useSettings } from "@/contexts/settings-context";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Customer {
   id: string;
@@ -42,6 +52,7 @@ export default function CustomersPage() {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | undefined>(undefined);
+  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const { toast } = useToast();
   const { formatCurrency } = useSettings();
@@ -88,6 +99,35 @@ export default function CustomersPage() {
     setIsFormOpen(true);
   };
 
+  const handleDelete = async () => {
+    if (!customerToDelete) return;
+
+    try {
+      const response = await fetch(`/api/customers/${customerToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete customer");
+      }
+
+      setCustomers(customers.filter(c => c.id !== customerToDelete.id));
+      toast({
+        title: "Success",
+        description: "Customer deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete customer",
+        variant: "destructive",
+      });
+    } finally {
+      setCustomerToDelete(null);
+    }
+  };
+
   const handleSync = async () => {
     setIsSyncing(true);
     try {
@@ -99,16 +139,16 @@ export default function CustomersPage() {
         throw new Error("Failed to sync customers");
       }
 
-      const result = await response.json();
+      await fetchCustomers();
       toast({
         title: "Success",
-        description: result.message,
+        description: "Customers synced successfully",
       });
-      fetchCustomers();
     } catch (error) {
+      console.error("Error syncing customers:", error);
       toast({
         title: "Error",
-        description: "Failed to sync customer orders",
+        description: "Failed to sync customers",
         variant: "destructive",
       });
     } finally {
@@ -116,72 +156,56 @@ export default function CustomersPage() {
     }
   };
 
-  const getSegmentColor = (segment: string) => {
-    switch (segment) {
-      case "vip":
-        return "bg-purple-500";
-      case "regular":
-        return "bg-blue-500";
-      case "new":
-        return "bg-green-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64">
-        <div className="text-lg text-red-500 mb-4">Failed to load customers</div>
-        <Button onClick={() => window.location.reload()}>Try Again</Button>
-      </div>
-    );
-  }
+  const columns = createColumns(
+    handleEdit,
+    (customer) => setCustomerToDelete(customer)
+  );
 
   return (
-    <div className="space-y-6">
-      <PageHeader 
-        title="Customers" 
-        description="Manage your customers and their information"
-        exportOptions={{ current: 'customers' }}
-      />
-
-      <div className="flex justify-between items-center mb-4">
-        <Button
-          onClick={() => {
-            setSelectedCustomer(undefined);
-            setIsFormOpen(true);
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Customer
-        </Button>
-        <Button
-          variant="outline"
-          onClick={handleSync}
-          disabled={isSyncing}
-        >
-          <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-          Sync Orders
-        </Button>
+    <>
+      <div className="h-full flex-1 flex-col space-y-8 p-8 flex">
+        <PageHeader 
+          title="Customers" 
+          description="Manage your customers and their information"
+          exportOptions={{ current: 'customers' }}
+        />
+        <div className="flex items-center justify-between space-y-2">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSync}
+              disabled={isSyncing}
+            >
+              {isSyncing ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Syncing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Sync
+                </>
+              )}
+            </Button>
+            <Button onClick={() => setIsFormOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" /> Add Customer
+            </Button>
+          </div>
+        </div>
+        <DataTable
+          columns={columns}
+          data={customers}
+          isLoading={isLoading}
+        />
       </div>
 
-      <Dialog open={isFormOpen} onOpenChange={(open) => {
-        setIsFormOpen(open);
-        if (!open) setSelectedCustomer(undefined);
-      }}>
-        <DialogContent className="max-w-2xl">
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {selectedCustomer ? "Edit Customer" : "Add New Customer"}
+              {selectedCustomer ? "Edit Customer" : "Add Customer"}
             </DialogTitle>
           </DialogHeader>
           <CustomerForm
@@ -191,37 +215,20 @@ export default function CustomersPage() {
         </DialogContent>
       </Dialog>
 
-      {customers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-64 text-center">
-          <div className="text-lg mb-4">No customers found</div>
-          <div className="text-sm text-gray-500 mb-4">
-            Add your first customer to get started
-          </div>
-        </div>
-      ) : (
-        <DataTable 
-          columns={columns} 
-          data={customers} 
-          isLoading={isLoading}
-          actions={(customer: Customer) => (
-            <div className="text-right space-x-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleEdit(customer)}
-              >
-                Edit
-              </Button>
-              <LoyaltyPointsDialog
-                customerId={customer.id}
-                customerName={customer.name}
-                currentPoints={customer.loyaltyPoints}
-                onSuccess={fetchCustomers}
-              />
-            </div>
-          )}
-        />
-      )}
-    </div>
+      <AlertDialog open={!!customerToDelete} onOpenChange={() => setCustomerToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the customer &quot;{customerToDelete?.name}&quot;. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

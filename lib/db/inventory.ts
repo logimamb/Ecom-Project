@@ -5,15 +5,14 @@ const INVENTORY_FILE = "data/inventory.json";
 
 export interface InventoryItem {
   id: string;
-  name: string;
-  sku: string;
-  description: string;
-  category: string;
-  price: number;
+  productId: string;
   quantity: number;
   reorderPoint: number;
-  supplier: string;
-  lastRestocked: string;
+  location?: string;
+  notes?: string;
+  expiryDate?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export async function getAll(): Promise<InventoryItem[]> {
@@ -35,6 +34,8 @@ export async function create(data: Omit<InventoryItem, "id">): Promise<Inventory
   const newItem: InventoryItem = {
     ...data,
     id: randomUUID(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
   await writeJSON(INVENTORY_FILE, {
@@ -49,53 +50,34 @@ export async function update(id: string, data: Partial<InventoryItem>): Promise<
   const index = inventory.findIndex((item) => item.id === id);
 
   if (index === -1) {
-    throw new Error("Item not found");
+    throw new Error("Inventory item not found");
   }
 
-  const updatedItem: InventoryItem = {
+  const updatedItem = {
     ...inventory[index],
     ...data,
+    updatedAt: new Date().toISOString(),
   };
 
   inventory[index] = updatedItem;
 
-  await writeJSON(INVENTORY_FILE, {
-    inventory,
-  });
+  await writeJSON(INVENTORY_FILE, { inventory });
 
   return updatedItem;
 }
 
 export async function updateMany(updatedItems: InventoryItem[]): Promise<void> {
-  const currentInventory = await getAll();
-  
-  // Create a map of existing items by ID for quick lookup
-  const itemsMap = new Map(currentInventory.map(item => [item.id, item]));
-  
-  // Update each item while preserving other fields
-  const newInventory = updatedItems.map(item => {
-    const existingItem = itemsMap.get(item.id);
-    if (!existingItem) {
-      throw new Error(`Item with id ${item.id} not found`);
-    }
-
-    return {
-      ...existingItem,
-      ...item,
-      lastRestocked: existingItem.lastRestocked, // Preserve original restock date
-    };
+  const inventory = await getAll();
+  const updatedInventory = inventory.map((item) => {
+    const updatedItem = updatedItems.find((updated) => updated.id === item.id);
+    return updatedItem ? { ...item, ...updatedItem } : item;
   });
 
-  await writeJSON(INVENTORY_FILE, {
-    inventory: newInventory,
-  });
+  await writeJSON(INVENTORY_FILE, { inventory: updatedInventory });
 }
 
 export async function remove(id: string): Promise<void> {
   const inventory = await getAll();
   const filteredInventory = inventory.filter((item) => item.id !== id);
-
-  await writeJSON(INVENTORY_FILE, {
-    inventory: filteredInventory,
-  });
+  await writeJSON(INVENTORY_FILE, { inventory: filteredInventory });
 }

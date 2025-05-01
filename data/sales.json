@@ -1,21 +1,3 @@
 {
-  "sales": [
-    {
-      "customerId": "ff299e9b-b836-4cdb-ac0e-38f367ddc310",
-      "items": [
-        {
-          "productId": "prod_1",
-          "quantity": 1,
-          "unitPrice": 25000
-        }
-      ],
-      "status": "pending",
-      "paymentMethod": "cash",
-      "notes": "Note",
-      "id": "7d324c9b-c279-4de6-b77c-4be39220424c",
-      "total": 25000,
-      "createdAt": "2025-04-11T08:02:56.077Z",
-      "updatedAt": "2025-04-11T08:02:56.077Z"
-    }
-  ]
+  "sales": []
 }

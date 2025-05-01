@@ -1,18 +1,18 @@
 {
   "customers": [
     {
-      "name": "sdfdsfdsf",
-      "email": "adsada@sfa.cds",
-      "phone": "3453665442",
-      "address": "safsaff",
+      "name": "Loic GIORGIO",
+      "email": "giorgioloic@gmail.com",
+      "phone": "06 939 50 24",
+      "address": "Pointe-Noire",
       "segment": "new",
-      "notes": "asdds",
+      "notes": "Note",
       "totalOrders": 0,
       "totalSpent": 0,
       "loyaltyPoints": 0,
-      "createdAt": "2025-04-11T07:52:14.972Z",
-      "updatedAt": "2025-04-11T07:52:14.972Z",
-      "id": "ff299e9b-b836-4cdb-ac0e-38f367ddc310"
+      "createdAt": "2025-05-01T18:52:40.444Z",
+      "updatedAt": "2025-05-01T18:52:40.444Z",
+      "id": "be202903-3885-4e35-aad4-2043435de6df"
     }
   ],
   "loyaltyPointsHistory": []

@@ -72,7 +72,7 @@ export async function DELETE(
     }
 
     await salesDb.remove(params.id);
-    return new NextResponse(null, { status: 204 });
+    return NextResponse.json({ message: "Sale deleted successfully" });
   } catch (error) {
     console.error("Error deleting sale:", error);
     return NextResponse.json(

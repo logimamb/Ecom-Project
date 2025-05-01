@@ -1,48 +1,48 @@
 {
   "inventory": [
     {
-      "id": "prod_1",
-      "name": "Daan Hair Shampoo",
-      "sku": "DHS001",
-      "price": 25000,
-      "quantity": 100,
-      "category": "Hair Care",
-      "supplierId": "a7683fa4-6d89-4748-8aac-420d0bfadcfb",
-      "createdAt": "2025-04-11T08:00:00Z",
-      "updatedAt": "2025-04-11T08:00:00Z"
-    },
-    {
-      "id": "prod_2",
-      "name": "Fengtong Smart Watch",
-      "sku": "FSW002",
-      "price": 49999,
-      "quantity": 75,
-      "category": "Electronics",
-      "supplierId": "fc8eb188-ab02-4a0c-931f-18c9728ccf8d",
-      "createdAt": "2025-04-11T08:00:00Z",
-      "updatedAt": "2025-04-11T08:00:00Z"
-    },
-    {
-      "id": "prod_3",
-      "name": "Daan Hair Conditioner",
-      "sku": "DHC003",
-      "price": 22000,
-      "quantity": 85,
-      "category": "Hair Care",
-      "supplierId": "a7683fa4-6d89-4748-8aac-420d0bfadcfb",
-      "createdAt": "2025-04-11T08:00:00Z",
-      "updatedAt": "2025-04-11T08:00:00Z"
-    },
-    {
-      "id": "prod_4",
-      "name": "Fengtong Wireless Earbuds",
-      "sku": "FWE004",
-      "price": 35000,
+      "id": "inv_1",
+      "productId": "prod_001",
       "quantity": 50,
-      "category": "Electronics",
-      "supplierId": "fc8eb188-ab02-4a0c-931f-18c9728ccf8d",
-      "createdAt": "2025-04-11T08:00:00Z",
-      "updatedAt": "2025-04-11T08:00:00Z"
+      "reorderPoint": 10,
+      "location": "Chemical Storage A",
+      "notes": "Leather care products",
+      "createdAt": "2025-04-11T07:04:10.895Z",
+      "updatedAt": "2025-04-11T07:44:25.547Z",
+      "price": 0
+    },
+    {
+      "id": "inv_2",
+      "productId": "prod_002",
+      "quantity": 50,
+      "reorderPoint": 10,
+      "location": "Chemical Storage A",
+      "notes": "Shoe care products",
+      "createdAt": "2025-04-11T07:09:31.789Z",
+      "updatedAt": "2025-04-11T07:44:44.648Z",
+      "price": 0
+    },
+    {
+      "id": "inv_3",
+      "productId": "prod_003",
+      "quantity": 18,
+      "reorderPoint": 5,
+      "location": "Electronics Storage",
+      "notes": "Smart phone accessories",
+      "createdAt": "2025-04-11T07:28:57.885Z",
+      "updatedAt": "2025-05-01T12:48:21.148Z",
+      "price": 0
+    },
+    {
+      "id": "inv_4",
+      "productId": "prod_004",
+      "quantity": 20,
+      "reorderPoint": 5,
+      "location": "Fashion Storage",
+      "notes": "Luxury handbags",
+      "createdAt": "2025-05-01T17:17:03.602Z",
+      "updatedAt": "2025-05-01T17:45:22.230Z",
+      "price": 0
     }
   ]
 }

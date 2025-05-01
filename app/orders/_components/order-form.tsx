@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Order, Supplier, FreightForwarder } from "@/lib/types";
+import { Order, Supplier, FreightForwarder, Product } from "@/lib/types";
 import { orderSchema } from "@/lib/validations/order";
 import { Card } from "@/components/ui/card";
 import { AlertCircle, Plus, Trash2 } from "lucide-react";
@@ -38,11 +38,13 @@ export function OrderForm({ order, onSuccess }: OrderFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [forwarders, setForwarders] = useState<FreightForwarder[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSuppliers();
     fetchForwarders();
+    fetchProducts();
   }, []);
 
   const fetchSuppliers = async () => {
@@ -67,6 +69,26 @@ export function OrderForm({ order, onSuccess }: OrderFormProps) {
       console.error("Error fetching forwarders:", error);
       setError("Failed to load freight forwarders");
     }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("/data/products.json");
+      if (!response.ok) throw new Error("Failed to fetch products");
+      const data = await response.json();
+      setProducts(data.products || []);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      setError("Failed to load products");
+    }
+  };
+
+  const generateSKU = (name: string) => {
+    return name
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 6)
+      .padEnd(6, '0');
   };
 
   const form = useForm<OrderFormData>({
@@ -102,26 +124,60 @@ export function OrderForm({ order, onSuccess }: OrderFormProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(
-        order ? `/api/orders/${order.id}` : "/api/orders",
-        {
-          method: order ? "PUT" : "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
+      // First, create or update products
+      for (const orderProduct of data.products) {
+        if (!orderProduct.productId) {
+          // This is a new product, create it
+          const newProduct = {
+            id: crypto.randomUUID(),
+            name: orderProduct.name,
+            sku: generateSKU(orderProduct.name),
+            category: "uncategorized", // Default category
+            supplierId: data.supplierId,
+            lastOrderPrice: orderProduct.unitPrice,
+            createdFromOrderId: order?.id || undefined,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+
+          // Add to products.json
+          const productsResponse = await fetch("/data/products.json");
+          const productsData = await productsResponse.json();
+          productsData.products = [...(productsData.products || []), newProduct];
+          
+          await fetch("/data/products.json", {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(productsData),
+          });
+
+          // Update the order product with the new product ID
+          orderProduct.productId = newProduct.id;
         }
-      );
+      }
+
+      // Now save the order
+      const url = order ? `/api/orders/${order.id}` : '/api/orders';
+      const method = order ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to save order");
+        throw new Error('Failed to save order');
       }
 
       onSuccess();
-    } catch (error) {
-      console.error("Error saving order:", error);
-      setError(error instanceof Error ? error.message : "Failed to save order");
+    } catch (err) {
+      console.error('Error saving order:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
     }

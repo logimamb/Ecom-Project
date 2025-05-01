@@ -38,7 +38,7 @@ interface Product {
   id: string;
   name: string;
   sku: string;
-  price: number;
+  lastOrderPrice: number;
   quantity: number;
 }
 
@@ -84,10 +84,24 @@ export function SaleForm({ sale, onSuccess }: SaleFormProps) {
 
     const fetchProducts = async () => {
       try {
-        const response = await fetch("/api/inventory");
-        const data = await response.json();
-        if (data.inventory) {
-          setProducts(data.inventory);
+        // Fetch products
+        const prodResponse = await fetch("/api/products");
+        const prodData = await prodResponse.json();
+        
+        // Fetch inventory
+        const invResponse = await fetch("/api/inventory");
+        const invData = await invResponse.json();
+        
+        if (Array.isArray(prodData)) {
+          // Merge product and inventory data
+          const productsWithInventory = prodData.map(product => {
+            const inventoryItem = invData.inventory.find((item: any) => item.productId === product.id);
+            return {
+              ...product,
+              quantity: inventoryItem?.quantity || 0
+            };
+          });
+          setProducts(productsWithInventory);
         }
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -232,7 +246,7 @@ export function SaleForm({ sale, onSuccess }: SaleFormProps) {
                             if (product) {
                               form.setValue(
                                 `items.${index}.unitPrice`,
-                                product.price
+                                product.lastOrderPrice
                               );
                             }
                           }}
@@ -246,7 +260,7 @@ export function SaleForm({ sale, onSuccess }: SaleFormProps) {
                           <SelectContent>
                             {products.map((product) => (
                               <SelectItem key={product.id} value={product.id}>
-                                {product.name} ({product.sku}) - {formatCurrency(product.price)}
+                                {product.name} ({product.sku}) - {formatCurrency(product.lastOrderPrice)}
                               </SelectItem>
                             ))}
                           </SelectContent>

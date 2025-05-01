@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Package2, DollarSign, Users, ArrowUpDown, Search, Loader2 } from "lucide-react";
+import { Plus, Package2, DollarSign, Users, ArrowUpDown, Search, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -22,8 +22,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useCurrency } from "@/hooks/use-currency";
+import { PageHeader } from '@/components/page-header';
 
 interface SaleItem {
   id: string;
@@ -83,46 +94,47 @@ export default function SalesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortField, setSortField] = useState<SortableFields>("createdAt");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [saleToDelete, setSaleToDelete] = useState<AnySale | null>(null);
   const { toast } = useToast();
   const { format } = useCurrency();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [salesRes, customersRes, inventoryRes] = await Promise.all([
+        const [salesRes, customersRes, productsRes] = await Promise.all([
           fetch("/api/sales"),
           fetch("/api/customers"),
-          fetch("/api/inventory")
+          fetch("/api/products")
         ]);
 
         const salesData = await salesRes.json();
         const customersData = await customersRes.json();
-        const inventoryData = await inventoryRes.json();
+        const productsData = await productsRes.json();
 
-        if (salesData.sales) {
+        if (Array.isArray(salesData.sales)) {
           setSales(salesData.sales);
         }
 
         if (customersData.customers) {
-          const customerMap = customersData.customers.reduce((acc: { [key: string]: Customer }, customer: Customer) => {
-            acc[customer.id] = customer;
-            return acc;
-          }, {});
-          setCustomers(customerMap);
+          const customersMap: { [key: string]: Customer } = {};
+          customersData.customers.forEach((customer: Customer) => {
+            customersMap[customer.id] = customer;
+          });
+          setCustomers(customersMap);
         }
 
-        if (inventoryData.inventory) {
-          const productMap = inventoryData.inventory.reduce((acc: { [key: string]: Product }, product: Product) => {
-            acc[product.id] = product;
-            return acc;
-          }, {});
-          setProducts(productMap);
+        if (Array.isArray(productsData)) {
+          const productsMap: { [key: string]: Product } = {};
+          productsData.forEach((product: Product) => {
+            productsMap[product.id] = product;
+          });
+          setProducts(productsMap);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
         toast({
           title: "Error",
-          description: "Failed to load data",
+          description: "Failed to load sales data",
           variant: "destructive",
         });
       } finally {
@@ -133,19 +145,32 @@ export default function SalesPage() {
     fetchData();
   }, [toast]);
 
-  const getStatusColor = (status: string): string => {
-    const colors: { [key: string]: string } = {
-      pending: "yellow",
-      paid: "blue",
-      shipped: "purple",
-      delivered: "green",
-      cancelled: "red",
-    };
-    return colors[status] || "gray";
+  const isLegacySale = (sale: AnySale): sale is LegacySale => {
+    return "platform" in sale;
   };
 
-  const handleSort = (field: SortableFields) => {
-    if (field === sortField) {
+  const getCustomerName = (customerId: string) => {
+    return customers[customerId]?.name || "Unknown Customer";
+  };
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "secondary";
+      case "paid":
+      case "delivered":
+        return "default";
+      case "shipped":
+        return "outline";
+      case "cancelled":
+        return "destructive";
+      default:
+        return "secondary";
+    }
+  };
+
+  const toggleSort = (field: SortableFields) => {
+    if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
@@ -153,51 +178,50 @@ export default function SalesPage() {
     }
   };
 
-  const isLegacySale = (sale: AnySale): sale is LegacySale => {
-    return "amount" in sale && "platform" in sale;
-  };
+  const handleDelete = async () => {
+    if (!saleToDelete) return;
 
-  const formatAmount = (sale: AnySale) => {
-    if ('total' in sale) {
-      // New sale format
-      return format(sale.total, 'XAF'); // Assuming old values were in XAF
-    } else {
-      // Legacy sale format
-      return format(parseFloat(sale.amount), 'XAF'); // Assuming old values were in XAF
+    try {
+      const response = await fetch(`/api/sales/${saleToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete sale");
+      }
+
+      setSales(sales.filter(sale => sale.id !== saleToDelete.id));
+      toast({
+        title: "Success",
+        description: "Sale deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting sale:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete sale",
+        variant: "destructive",
+      });
+    } finally {
+      setSaleToDelete(null);
     }
   };
 
-  const getItemsDisplay = (sale: AnySale): string => {
-    if (isLegacySale(sale)) {
-      return "1 item";
-    }
-    return `${sale.items.length} items`;
-  };
-
-  const getProductsDisplay = (sale: AnySale): string => {
-    if (isLegacySale(sale)) {
-      return "N/A";
-    }
-    return sale.items
-      .map(item => products[item.productId]?.name || "Unknown")
-      .join(", ");
-  };
-
-  const filteredAndSortedSales = sales
+  const filteredSales = sales
     .filter((sale) => {
       const matchesSearch =
-        customers[sale.customerId]?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        searchQuery === "" ||
+        getCustomerName(sale.customerId)
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
         sale.id.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus = statusFilter === "all" || sale.status === statusFilter;
+
+      const matchesStatus =
+        statusFilter === "all" || sale.status.toLowerCase() === statusFilter.toLowerCase();
+
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
-      if (sortField === "total") {
-        const aTotal = isLegacySale(a) ? parseFloat(a.amount) : a.total;
-        const bTotal = isLegacySale(b) ? parseFloat(b.amount) : b.total;
-        return sortDirection === "asc" ? aTotal - bTotal : bTotal - aTotal;
-      }
-
       const aValue = (a as any)[sortField];
       const bValue = (b as any)[sortField];
       const direction = sortDirection === "asc" ? 1 : -1;
@@ -218,18 +242,38 @@ export default function SalesPage() {
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex items-center justify-between mb-8">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-semibold tracking-tight">Sales Management</h2>
-          <p className="text-sm text-muted-foreground">
-            Create and manage sales orders, track payments, and monitor delivery status.
-          </p>
+    <div className="h-full flex-1 flex-col space-y-8 p-8 flex">
+      <PageHeader 
+        title="Sales" 
+        description="View and manage your sales"
+        exportOptions={{ current: 'sales' }}
+      />
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+        <div className="flex flex-1 gap-4 md:max-w-[600px]">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search by customer or order ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="shipped">Shipped</SelectItem>
+              <SelectItem value="delivered">Delivered</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Button onClick={() => router.push("/sales/add")} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          New Sale
-        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4 mb-8">
@@ -239,7 +283,7 @@ export default function SalesPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{format(totalRevenue, 'XAF')}</div>
+            <div className="text-2xl font-bold">{format(totalRevenue)}</div>
           </CardContent>
         </Card>
 
@@ -274,152 +318,135 @@ export default function SalesPage() {
         </Card>
       </div>
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <div className="flex flex-1 gap-4 md:max-w-[600px]">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search by customer or order ID..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
-              <SelectItem value="shipped">Shipped</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("createdAt")}
-                  className="flex items-center"
-                >
-                  Date
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead>Products</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Items</TableHead>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("total")}
-                  className="flex items-center"
-                >
-                  Total
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Payment</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredAndSortedSales.length === 0 ? (
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
-                  No sales found.
-                </TableCell>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => toggleSort("id")}
+                    className="flex items-center space-x-1"
+                  >
+                    Order ID
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => toggleSort("customerId")}
+                    className="flex items-center space-x-1"
+                  >
+                    Customer
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => toggleSort("total")}
+                    className="flex items-center space-x-1"
+                  >
+                    Amount
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => toggleSort("status")}
+                    className="flex items-center space-x-1"
+                  >
+                    Status
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => toggleSort("createdAt")}
+                    className="flex items-center space-x-1"
+                  >
+                    Date
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            ) : (
-              filteredAndSortedSales.map((sale) => (
-                <TableRow key={sale.id} className="group">
-                  <TableCell>
-                    {new Date(sale.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>{getProductsDisplay(sale)}</TableCell>
-                  <TableCell>{customers[sale.customerId]?.name || "Unknown"}</TableCell>
-                  <TableCell>{getItemsDisplay(sale)}</TableCell>
-                  <TableCell className="text-right">
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      formatAmount(sale)
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusColor(sale.status) as any}>
-                      {sale.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {isLegacySale(sale) ? sale.platform : sale.paymentMethod.replace("_", " ")}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => router.push(`/sales/${sale.id}`)}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="h-4 w-4"
-                        >
-                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                          <path d="m15 5 4 4" />
-                        </svg>
-                        <span className="sr-only">Edit</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => window.print()}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="h-4 w-4"
-                        >
-                          <polyline points="6 9 6 2 18 2 18 9" />
-                          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                          <rect width="12" height="8" x="6" y="14" />
-                        </svg>
-                        <span className="sr-only">Print</span>
-                      </Button>
+            </TableHeader>
+            <TableBody>
+              {filteredSales.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center">
+                    <div className="flex flex-col items-center justify-center py-8">
+                      <Package2 className="h-8 w-8 text-muted-foreground" />
+                      <h3 className="mt-4 text-lg font-medium">No sales found</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {searchQuery || statusFilter !== "all"
+                          ? "Try adjusting your filters"
+                          : "Add some sales to get started"}
+                      </p>
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ) : (
+                filteredSales.map((sale) => (
+                  <TableRow key={sale.id}>
+                    <TableCell>{sale.id}</TableCell>
+                    <TableCell>{getCustomerName(sale.customerId)}</TableCell>
+                    <TableCell>
+                      {format(isLegacySale(sale) ? parseFloat(sale.amount) : sale.total)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusBadgeVariant(sale.status)}>
+                        {sale.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(sale.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push(`/sales/${sale.id}`)}
+                        >
+                          View
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setSaleToDelete(sale)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={!!saleToDelete} onOpenChange={() => setSaleToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the sale. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -25,7 +25,8 @@
       },
       "id": "6d5c66f2-8abe-4074-ae7a-be2059325fe0",
       "createdAt": "2025-04-11T07:04:10.895Z",
-      "updatedAt": "2025-04-11T07:44:25.547Z"
+      "updatedAt": "2025-04-11T07:44:25.547Z",
+      "totalAmount": 0
     },
     {
       "supplierId": "a7683fa4-6d89-4748-8aac-420d0bfadcfb",
@@ -52,7 +53,8 @@
       },
       "id": "c767962b-788c-4571-a4f5-7dccc7e0a9a2",
       "createdAt": "2025-04-11T07:09:31.789Z",
-      "updatedAt": "2025-04-11T07:44:44.648Z"
+      "updatedAt": "2025-04-11T07:44:44.648Z",
+      "totalAmount": 0
     },
     {
       "supplierId": "fc8eb188-ab02-4a0c-931f-18c9728ccf8d",
@@ -64,10 +66,10 @@
           "unitPrice": 5919.14
         }
       ],
-      "status": "pending",
+      "status": "delivered",
       "costs": {
         "purchase": 106544.52,
-        "shipping": 0,
+        "shipping": 91800,
         "taxes": 0,
         "bankCharges": 3294,
         "platformCommission": 4190.81,
@@ -75,11 +77,40 @@
       },
       "payments": {
         "supplier": 106544.52,
-        "forwarder": 102000
+        "forwarder": 91800
       },
       "id": "f603e24f-fcbf-45e6-8aa1-7071334fdeb8",
       "createdAt": "2025-04-11T07:28:57.885Z",
-      "updatedAt": "2025-04-11T07:28:57.885Z"
+      "updatedAt": "2025-05-01T12:48:21.148Z",
+      "totalAmount": 0
+    },
+    {
+      "supplierId": "9e938305-22c9-4ead-a1d6-ad6e885773a4",
+      "forwarderId": "1923f688-ef13-4f17-8279-79f5379c4caf",
+      "products": [
+        {
+          "name": "sac à main sacs de luxe femmes sacs à main pour dames sacs",
+          "quantity": 20,
+          "unitPrice": 830.54
+        }
+      ],
+      "status": "pending",
+      "costs": {
+        "purchase": 16610.86,
+        "shipping": 0,
+        "taxes": 0,
+        "bankCharges": 669.01,
+        "platformCommission": 605.6,
+        "deliveryToForwarder": 3460.6
+      },
+      "payments": {
+        "supplier": 20071.45,
+        "forwarder": 0
+      },
+      "id": "3ab6aaea-754b-460d-8a5e-22ae3ed9aaf7",
+      "createdAt": "2025-05-01T17:34:53.716Z",
+      "updatedAt": "2025-05-01T17:34:53.716Z",
+      "totalAmount": 0
     }
   ]
 }

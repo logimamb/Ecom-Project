@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { InventoryItem, Supplier } from "@/lib/types";
+import { InventoryItem, Supplier, Product } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,34 +35,45 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCurrency } from "@/hooks/use-currency";
+import { PageHeader } from '@/components/page-header';
 
 export default function InventoryPage() {
   const router = useRouter();
   const [items, setItems] = useState<InventoryItem[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [stockFilter, setStockFilter] = useState("all");
-  const [sortField, setSortField] = useState<keyof InventoryItem>("name");
+  const [sortField, setSortField] = useState<keyof (Product & InventoryItem)>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
   const { format } = useCurrency();
 
-  const formatPrice = (price: number) => {
-    return format(price, 'XAF'); // Assuming old values were in XAF
-  };
-
   useEffect(() => {
     fetchInventory();
+    fetchProducts();
     fetchSuppliers();
   }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('/api/products');
+      if (!response.ok) throw new Error("Failed to fetch products");
+      const data = await response.json();
+      setProducts(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error fetching products:', err);
+      setError(err instanceof Error ? err.message : "An error occurred");
+    }
+  };
 
   const fetchInventory = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/data/inventory.json');
+      const response = await fetch('/api/inventory');
       if (!response.ok) throw new Error("Failed to fetch inventory");
       const data = await response.json();
       setItems(Array.isArray(data.inventory) ? data.inventory : []);
@@ -76,7 +87,7 @@ export default function InventoryPage() {
 
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch('/data/suppliers.json');
+      const response = await fetch('/api/suppliers');
       if (!response.ok) throw new Error("Failed to fetch suppliers");
       const data = await response.json();
       setSuppliers(Array.isArray(data.suppliers) ? data.suppliers : []);
@@ -85,394 +96,285 @@ export default function InventoryPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+
     try {
-      // For local JSON storage, we'll just update the state
-      setItems((prev) => prev.filter((item) => item.id !== id));
+      const response = await fetch(`/api/inventory/${itemToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete item');
+      }
+
+      setItems(items.filter(item => item.id !== itemToDelete.id));
       setItemToDelete(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete item");
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      setError('Failed to delete item');
     }
   };
 
-  const getStockStatus = (item: InventoryItem) => {
-    if (item.quantity <= 0) {
-      return { label: "Out of Stock", color: "destructive" };
-    }
-    if (item.quantity <= item.reorderPoint) {
-      return { label: "Low Stock", color: "warning" };
-    }
-    return { label: "In Stock", color: "success" };
-  };
-
-  const handleSort = (field: keyof InventoryItem) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
+  const getProductDetails = (productId: string) => {
+    return products.find(p => p.id === productId);
   };
 
   const getSupplierName = (supplierId: string) => {
-    return suppliers.find(s => s.id === supplierId)?.name || "Unknown Supplier";
+    const supplier = suppliers.find(s => s.id === supplierId);
+    return supplier ? supplier.name : 'Unknown Supplier';
   };
 
-  const filteredAndSortedItems = Array.isArray(items) ? items
-    .filter(item => {
+  const filteredItems = items
+    .map(item => {
+      const product = getProductDetails(item.productId);
+      return product ? { ...item, ...product } : null;
+    })
+    .filter((item): item is (InventoryItem & Product) => {
       if (!item) return false;
       
-      const matchesSearch = 
-        (item.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (item.sku?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-        (getSupplierName(item.supplierId)?.toLowerCase() || '').includes(searchQuery.toLowerCase());
-      
+      const matchesSearch = searchQuery === "" || 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.sku.toLowerCase().includes(searchQuery.toLowerCase());
+
       const matchesCategory = categoryFilter === "all" || item.category === categoryFilter;
-      
-      const stockStatus = getStockStatus(item);
-      const matchesStock = stockFilter === "all" || 
-        (stockFilter === "out" && stockStatus.label === "Out of Stock") ||
-        (stockFilter === "low" && stockStatus.label === "Low Stock") ||
-        (stockFilter === "in" && stockStatus.label === "In Stock");
-      
+
+      const matchesStock = stockFilter === "all" ||
+        (stockFilter === "inStock" && item.quantity > 0) ||
+        (stockFilter === "lowStock" && item.quantity <= item.reorderPoint && item.quantity > 0) ||
+        (stockFilter === "outOfStock" && item.quantity <= 0);
+
       return matchesSearch && matchesCategory && matchesStock;
     })
     .sort((a, b) => {
-      if (!a || !b) return 0;
-      
       const aValue = a[sortField];
       const bValue = b[sortField];
-      const direction = sortDirection === "asc" ? 1 : -1;
       
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return direction * aValue.localeCompare(bValue);
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortDirection === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
       }
       
-      return direction * ((aValue as number) - (bValue as number));
-    }) : [];
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortDirection === 'asc' 
+          ? aValue - bValue
+          : bValue - aValue;
+      }
+      
+      return 0;
+    });
 
-  const totalItems = Array.isArray(items) ? items.length : 0;
-  const lowStockItems = Array.isArray(items) ? items.filter(item => 
-    item && item.quantity !== undefined && 
-    item.reorderPoint !== undefined && 
-    item.quantity <= item.reorderPoint && 
-    item.quantity > 0
-  ).length : 0;
-  const outOfStockItems = Array.isArray(items) ? items.filter(item => 
-    item && item.quantity !== undefined && 
-    item.quantity <= 0
-  ).length : 0;
-  const totalValue = Array.isArray(items) ? items.reduce((sum, item) => {
-    if (!item || typeof item.quantity !== 'number' || typeof item.price !== 'number') return sum;
-    return sum + (item.quantity * item.price);
-  }, 0) : 0;
+  const uniqueCategories = Array.from(new Set(products.map(p => p.category)));
 
-  const categories = Array.isArray(items) ? Array.from(new Set(items.filter(item => item && item.category).map(item => item.category))) : [];
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  const toggleSort = (field: keyof (Product & InventoryItem)) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex items-center justify-between mb-8">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-semibold tracking-tight">Inventory Management</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage your inventory items, track stock levels, and monitor reorder points.
-          </p>
-        </div>
-        <Button onClick={() => router.push("/inventory/add")} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add New Item
-        </Button>
-      </div>
-
-      {error && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-        <div className="flex flex-1 gap-4 md:max-w-[600px]">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search items..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
+    <>
+      <div className="h-full flex-1 flex-col space-y-8 p-8 flex">
+        <PageHeader 
+          title="Inventory" 
+          description="Manage your inventory and stock levels"
+          exportOptions={{ current: 'inventory' }}
+        />
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Inventory</h1>
+            <p className="text-muted-foreground">
+              Manage your inventory items and stock levels
+            </p>
           </div>
-          
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Select value={stockFilter} onValueChange={setStockFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Stock Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="in">In Stock</SelectItem>
-              <SelectItem value="low">Low Stock</SelectItem>
-              <SelectItem value="out">Out of Stock</SelectItem>
-            </SelectContent>
-          </Select>
+          <Button onClick={() => router.push('/inventory/add')}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Item
+          </Button>
         </div>
-        <Select
-          value={sortField}
-          onValueChange={(value) => setSortField(value as keyof InventoryItem)}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name">Name</SelectItem>
-            <SelectItem value="sku">SKU</SelectItem>
-            <SelectItem value="quantity">Quantity</SelectItem>
-            <SelectItem value="price">Price</SelectItem>
-            <SelectItem value="category">Category</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          value={sortDirection}
-          onValueChange={(value) => setSortDirection(value as "asc" | "desc")}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Sort direction" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="asc">Ascending</SelectItem>
-            <SelectItem value="desc">Descending</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("name")}
-                  className="flex items-center"
-                >
-                  Name
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead>SKU</TableHead>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("quantity")}
-                  className="flex items-center"
-                >
-                  Quantity
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("category")}
-                  className="flex items-center"
-                >
-                  Category
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead>Supplier</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("lastRestocked")}
-                  className="flex items-center"
-                >
-                  Last Restocked
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("price")}
-                  className="flex items-center"
-                >
-                  Price
-                  <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-              </TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredAndSortedItems.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={10} className="h-24 text-center">
-                  No items found.
-                </TableCell>
-              </TableRow>
+        {error && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="flex items-center space-x-2">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search items..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1"
+                />
+              </div>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {uniqueCategories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={stockFilter} onValueChange={setStockFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Stock status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Stock</SelectItem>
+                  <SelectItem value="inStock">In Stock</SelectItem>
+                  <SelectItem value="lowStock">Low Stock</SelectItem>
+                  <SelectItem value="outOfStock">Out of Stock</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Inventory Items</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : filteredItems.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Package2 className="h-8 w-8 text-muted-foreground" />
+                <h3 className="mt-4 text-lg font-medium">No items found</h3>
+                <p className="text-sm text-muted-foreground">
+                  {searchQuery || categoryFilter !== "all" || stockFilter !== "all"
+                    ? "Try adjusting your filters"
+                    : "Add some items to your inventory"}
+                </p>
+              </div>
             ) : (
-              filteredAndSortedItems.map((item) => {
-                const stockStatus = getStockStatus(item);
-                return (
-                  <TableRow key={item.id} className="group">
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell>{item.sku}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {item.quantity}
-                        {item.quantity <= item.reorderPoint && (
-                          <div 
-                            className="tooltip" 
-                            data-tip={`Low stock alert: Below reorder point (${item.reorderPoint})`}
-                          >
-                            <AlertTriangle className="h-4 w-4 text-yellow-500" />
+              <div className="relative overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>
+                        <Button
+                          variant="ghost"
+                          onClick={() => toggleSort('name')}
+                          className="flex items-center space-x-1"
+                        >
+                          Name
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead>SKU</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>
+                        <Button
+                          variant="ghost"
+                          onClick={() => toggleSort('quantity')}
+                          className="flex items-center space-x-1"
+                        >
+                          Stock
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button
+                          variant="ghost"
+                          onClick={() => toggleSort('lastOrderPrice')}
+                          className="flex items-center space-x-1"
+                        >
+                          Price
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredItems.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell>{item.sku}</TableCell>
+                        <TableCell>{item.category}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant={
+                              item.quantity <= 0 ? "destructive" :
+                              item.quantity <= item.reorderPoint ? "secondary" :
+                              "default"
+                            }>
+                              {item.quantity <= 0 ? "Out of Stock" :
+                               item.quantity <= item.reorderPoint ? "Low Stock" :
+                               "In Stock"}
+                            </Badge>
+                            <span className="text-muted-foreground">
+                              ({item.quantity})
+                            </span>
                           </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={stockStatus.color as any}>
-                        {stockStatus.label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{item.category}</TableCell>
-                    <TableCell>{getSupplierName(item.supplierId)}</TableCell>
-                    <TableCell>{item.location || "—"}</TableCell>
-                    <TableCell>
-                      {item.lastRestocked 
-                        ? new Date(item.lastRestocked).toLocaleDateString()
-                        : "—"
-                      }
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        formatPrice(item.price)
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => router.push(`/inventory/${item.id}`)}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="h-4 w-4"
-                          >
-                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                            <path d="m15 5 4 4" />
-                          </svg>
-                          <span className="sr-only">Edit</span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 hover:text-red-600"
-                          onClick={() => handleDelete(item.id)}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="h-4 w-4"
-                          >
-                            <path d="M3 6h18" />
-                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                          </svg>
-                          <span className="sr-only">Delete</span>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
+                        </TableCell>
+                        <TableCell>
+                          {format(item.lastOrderPrice)}
+                        </TableCell>
+                        <TableCell>{item.location || "—"}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => router.push(`/inventory/edit/${item.id}`)}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setItemToDelete(item)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
-          </TableBody>
-        </Table>
-      </div>
+          </CardContent>
+        </Card>
 
-      {/* Delete Dialog */}
-      <AlertDialog open={!!itemToDelete} onOpenChange={() => setItemToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete {itemToDelete?.name} from your inventory.
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => handleDelete(itemToDelete?.id || '')}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <div className="flex flex-col gap-4 mt-8">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-medium">Inventory Summary</h3>
-        </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <h4 className="text-sm font-medium mb-2">Total Items</h4>
-            <p className="text-lg font-bold">{totalItems}</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <h4 className="text-sm font-medium mb-2">Low Stock Items</h4>
-            <p className="text-lg font-bold">{lowStockItems}</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <h4 className="text-sm font-medium mb-2">Out of Stock Items</h4>
-            <p className="text-lg font-bold">{outOfStockItems}</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm col-span-3">
-            <h4 className="text-sm font-medium mb-2">Total Value</h4>
-            <p className="text-lg font-bold">{formatPrice(totalValue)}</p>
-          </div>
-        </div>
+        <AlertDialog open={!!itemToDelete} onOpenChange={() => setItemToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete the inventory item. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
-    </div>
+    </>
   );
 }

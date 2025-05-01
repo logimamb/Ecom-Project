@@ -43,6 +43,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { useSettings } from "@/contexts/settings-context";
+import { PageHeader } from '@/components/page-header';
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -171,10 +172,13 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="space-y-4 p-8">
+      <PageHeader 
+        title="Orders" 
+        description="Track and manage your purchase orders"
+        exportOptions={{ current: 'orders' }}
+      />
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-6">Orders</h1>
-
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

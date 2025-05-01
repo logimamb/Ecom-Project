@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import * as db from '@/lib/db/inventory';
 import { inventorySchema } from '@/lib/validations/inventory';
 
 interface RouteParams {
@@ -10,7 +10,7 @@ interface RouteParams {
 
 export async function GET(request: Request, { params }: RouteParams) {
   try {
-    const item = await db.inventory.findById(params.id);
+    const item = await db.getById(params.id);
     if (!item) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
     }
@@ -21,7 +21,7 @@ export async function GET(request: Request, { params }: RouteParams) {
   }
 }
 
-export async function PATCH(request: Request, { params }: RouteParams) {
+export async function PUT(request: Request, { params }: RouteParams) {
   try {
     const body = await request.json();
     
@@ -34,7 +34,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       }, { status: 400 });
     }
 
-    const item = await db.inventory.update(params.id, validationResult.data);
+    const item = await db.update(params.id, validationResult.data);
     if (!item) {
       return NextResponse.json({ error: 'Item not found' }, { status: 404 });
     }
@@ -49,10 +49,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {
-    const success = await db.inventory.delete(params.id);
-    if (!success) {
-      return NextResponse.json({ error: 'Item not found' }, { status: 404 });
-    }
+    await db.remove(params.id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting inventory item:', error);
