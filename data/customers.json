@@ -1,18 +1,18 @@
 {
   "customers": [
     {
-      "name": "Loic GIORGIO",
-      "email": "giorgioloic@gmail.com",
-      "phone": "06 939 50 24",
-      "address": "Pointe-Noire",
+      "name": "Keurbie TATY",
+      "email": "email@email.com",
+      "phone": "06 881 16 61",
+      "address": "Brazzaville",
       "segment": "new",
-      "notes": "Note",
+      "notes": "Premiere cliente d`Au Comptoir : Achat Trepied Suivi authomatique visage.",
       "totalOrders": 0,
       "totalSpent": 0,
       "loyaltyPoints": 0,
-      "createdAt": "2025-05-01T18:52:40.444Z",
-      "updatedAt": "2025-05-01T18:52:40.444Z",
-      "id": "be202903-3885-4e35-aad4-2043435de6df"
+      "createdAt": "2025-05-05T16:25:19.609Z",
+      "updatedAt": "2025-05-05T16:26:33.827Z",
+      "id": "cc9b20ae-c1f1-4795-9ccc-774aae946f80"
     }
   ],
   "loyaltyPointsHistory": []

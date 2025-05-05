@@ -10,11 +10,18 @@ interface RouteParams {
 
 export async function GET(request: Request, { params }: RouteParams) {
   try {
-    const order = await db.orders.findById(params.id);
-    if (!order) {
+    const data = await db.orders.findById(params.id);
+    if (!data) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
-    return NextResponse.json(order);
+
+    // Ensure we're returning a proper JSON response
+    return new NextResponse(JSON.stringify(data), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   } catch (error) {
     console.error('Error fetching order:', error);
     return NextResponse.json({ error: 'Failed to fetch order' }, { status: 500 });

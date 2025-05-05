@@ -1,3 +1,21 @@
 {
-  "sales": []
+  "sales": [
+    {
+      "customerId": "cc9b20ae-c1f1-4795-9ccc-774aae946f80",
+      "items": [
+        {
+          "productId": "prod_003",
+          "quantity": 1,
+          "unitPrice": 18000
+        }
+      ],
+      "status": "delivered",
+      "paymentMethod": "mobile_money",
+      "notes": "La premiere cliente d`Au Comptoir. Tout s`est bien passe.",
+      "id": "f3ca20cd-e9ec-4737-a5a2-71e937278f1e",
+      "total": 18000,
+      "createdAt": "2025-05-05T16:51:56.654Z",
+      "updatedAt": "2025-05-05T16:51:56.656Z"
+    }
+  ]
 }

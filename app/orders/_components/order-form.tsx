@@ -73,10 +73,10 @@ export function OrderForm({ order, onSuccess }: OrderFormProps) {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("/data/products.json");
+      const response = await fetch("/api/products");
       if (!response.ok) throw new Error("Failed to fetch products");
       const data = await response.json();
-      setProducts(data.products || []);
+      setProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching products:", error);
       setError("Failed to load products");
@@ -136,48 +136,47 @@ export function OrderForm({ order, onSuccess }: OrderFormProps) {
             supplierId: data.supplierId,
             lastOrderPrice: orderProduct.unitPrice,
             createdFromOrderId: order?.id || undefined,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
           };
 
-          // Add to products.json
-          const productsResponse = await fetch("/data/products.json");
-          const productsData = await productsResponse.json();
-          productsData.products = [...(productsData.products || []), newProduct];
+          // Get current products and add new one
+          const productsResponse = await fetch("/api/products");
+          if (!productsResponse.ok) throw new Error("Failed to fetch products");
+          const currentProducts = await productsResponse.json();
           
-          await fetch("/data/products.json", {
+          // Add new product
+          await fetch("/api/products", {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(productsData),
+            body: JSON.stringify([...currentProducts, newProduct]),
           });
 
-          // Update the order product with the new product ID
+          // Update the product reference in the order
           orderProduct.productId = newProduct.id;
         }
       }
 
-      // Now save the order
-      const url = order ? `/api/orders/${order.id}` : '/api/orders';
-      const method = order ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      // Now create or update the order
+      const response = await fetch(
+        order ? `/api/orders/${order.id}` : "/api/orders",
+        {
+          method: order ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to save order');
+        throw new Error("Failed to save order");
       }
 
       onSuccess();
-    } catch (err) {
-      console.error('Error saving order:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+    } catch (error) {
+      console.error("Error saving order:", error);
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsLoading(false);
     }

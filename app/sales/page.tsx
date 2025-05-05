@@ -95,8 +95,14 @@ export default function SalesPage() {
   const [sortField, setSortField] = useState<SortableFields>("createdAt");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [saleToDelete, setSaleToDelete] = useState<AnySale | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
   const { toast } = useToast();
   const { format } = useCurrency();
+
+  const handleNavigation = (path: string) => {
+    setIsNavigating(true);
+    router.push(path);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -243,12 +249,24 @@ export default function SalesPage() {
 
   return (
     <div className="h-full flex-1 flex-col space-y-8 p-8 flex">
-      <PageHeader 
-        title="Sales" 
-        description="View and manage your sales"
-        exportOptions={{ current: 'sales' }}
-      />
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Sales</h2>
+          <p className="text-muted-foreground">
+            Manage your sales and transactions
+          </p>
+        </div>
+        <Button
+          onClick={() => handleNavigation('/sales/add')}
+          disabled={isNavigating}
+          className="inline-flex items-center justify-center"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          {isNavigating ? 'Loading...' : 'Add Sale'}
+        </Button>
+      </div>
+
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-1 gap-4 md:max-w-[600px]">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -412,9 +430,10 @@ export default function SalesPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => router.push(`/sales/${sale.id}`)}
+                          onClick={() => handleNavigation(`/sales/${sale.id}`)}
+                          disabled={isNavigating}
                         >
-                          View
+                          {isNavigating ? 'Loading...' : 'View'}
                         </Button>
                         <Button
                           variant="destructive"
