@@ -5,55 +5,32 @@
       "forwarderId": "1923f688-ef13-4f17-8279-79f5379c4caf",
       "products": [
         {
-          "name": "Leather Conditioner and Leather Cleaner conditioner 3.38OZ/100ML",
+          "name": "Conditionneur et nettoyant pour cuir 3.38OZ/100ML",
           "quantity": 50,
-          "unitPrice": 745.81
+          "unitPrice": 5000
+        },
+        {
+          "name": "Kit de nettoyage de chaussures en mousse, avec brosse et serviette, fabriqué en gros par OEM ODM",
+          "quantity": 50,
+          "unitPrice": 5000
         }
       ],
       "status": "pending",
       "costs": {
-        "purchase": 37290.6,
+        "purchase": 91948.78,
         "shipping": 0,
         "taxes": 0,
-        "bankCharges": 1411.72,
-        "platformCommission": 1411.73,
-        "deliveryToForwarder": 2367.66
+        "bankCharges": 2823.44,
+        "platformCommission": 2823.46,
+        "deliveryToForwarder": 4626.35
       },
       "payments": {
-        "supplier": 470571.89,
-        "forwarder": 102000
+        "supplier": 91948.78,
+        "forwarder": 0
       },
       "id": "6d5c66f2-8abe-4074-ae7a-be2059325fe0",
       "createdAt": "2025-04-11T07:04:10.895Z",
-      "updatedAt": "2025-04-11T07:44:25.547Z",
-      "totalAmount": 0
-    },
-    {
-      "supplierId": "a7683fa4-6d89-4748-8aac-420d0bfadcfb",
-      "forwarderId": "1923f688-ef13-4f17-8279-79f5379c4caf",
-      "products": [
-        {
-          "name": "Factory wholesale OEM ODM shoe cleaner kit custom foam cleaner with brush and towel shoe cleaning kit",
-          "quantity": 50,
-          "unitPrice": 1136.48
-        }
-      ],
-      "status": "pending",
-      "costs": {
-        "purchase": 56823.78,
-        "shipping": 0,
-        "taxes": 0,
-        "bankCharges": 1411.72,
-        "platformCommission": 1411.73,
-        "deliveryToForwarder": 2367.66
-      },
-      "payments": {
-        "supplier": 56823.78,
-        "forwarder": 51000
-      },
-      "id": "c767962b-788c-4571-a4f5-7dccc7e0a9a2",
-      "createdAt": "2025-04-11T07:09:31.789Z",
-      "updatedAt": "2025-04-11T07:44:44.648Z",
+      "updatedAt": "2025-05-06T06:49:06.352Z",
       "totalAmount": 0
     },
     {
@@ -70,7 +47,7 @@
       "costs": {
         "purchase": 106544.52,
         "shipping": 91800,
-        "taxes": 0,
+        "taxes": 35000,
         "bankCharges": 3294,
         "platformCommission": 4190.81,
         "deliveryToForwarder": 4143.4
@@ -81,7 +58,7 @@
       },
       "id": "f603e24f-fcbf-45e6-8aa1-7071334fdeb8",
       "createdAt": "2025-04-11T07:28:57.885Z",
-      "updatedAt": "2025-05-05T17:01:35.199Z",
+      "updatedAt": "2025-05-17T17:57:49.951Z",
       "totalAmount": 0
     },
     {
@@ -111,6 +88,146 @@
       "createdAt": "2025-05-01T17:34:53.716Z",
       "updatedAt": "2025-05-01T17:34:53.716Z",
       "totalAmount": 0
+    },
+    {
+      "supplierId": "a1d91806-cb4c-40a1-802f-efd3e023cadf",
+      "forwarderId": "1923f688-ef13-4f17-8279-79f5379c4caf",
+      "products": [
+        {
+          "name": "Ecouteurs Audifonos Auriculares M10 Wireless Earbuds with Power Bank",
+          "quantity": 25,
+          "unitPrice": 5000
+        },
+        {
+          "name": "Casque Audifonos Gaming Headset Handsfree P47 Wireless Headphones with MIC",
+          "quantity": 25,
+          "unitPrice": 5000
+        }
+      ],
+      "status": "pending",
+      "costs": {
+        "purchase": 37299.98,
+        "shipping": 0,
+        "taxes": 0,
+        "bankCharges": 1373.43,
+        "platformCommission": 5372.71,
+        "deliveryToForwarder": 1734.88
+      },
+      "payments": {
+        "supplier": 37299.98,
+        "forwarder": 0
+      },
+      "id": "09c3e3aa-3f41-4a3a-b0e2-5810df9c3268",
+      "createdAt": "2025-05-06T06:41:25.486Z",
+      "updatedAt": "2025-05-06T06:41:25.486Z"
+    },
+    {
+      "supplierId": "dc69ba04-50e8-4e5b-8ea0-e1d2f4b4ff89",
+      "forwarderId": "1923f688-ef13-4f17-8279-79f5379c4caf",
+      "products": [
+        {
+          "name": "Sacs à main de luxe pour femmes Marques célèbres",
+          "quantity": 15,
+          "unitPrice": 6500
+        }
+      ],
+      "status": "pending",
+      "costs": {
+        "purchase": 36162.85,
+        "shipping": 0,
+        "taxes": 0,
+        "bankCharges": 1223.97,
+        "platformCommission": 0,
+        "deliveryToForwarder": 4636.26
+      },
+      "payments": {
+        "supplier": 36162.85,
+        "forwarder": 0
+      },
+      "id": "0f74e63c-9ac5-4f07-b0a0-14e665ceb5e0",
+      "createdAt": "2025-05-08T14:01:34.007Z",
+      "updatedAt": "2025-05-08T14:01:34.007Z"
+    },
+    {
+      "supplierId": "a9f1ecea-a05e-46d6-95bc-d214e9128a8c",
+      "forwarderId": "1923f688-ef13-4f17-8279-79f5379c4caf",
+      "products": [
+        {
+          "name": "Porte-bébés avec siège de hanche en gros 9 en 1 Coton porte-bébé sac à dos pour nouveau-né",
+          "quantity": 15,
+          "unitPrice": 20000
+        }
+      ],
+      "status": "pending",
+      "costs": {
+        "purchase": 74218.12,
+        "shipping": 0,
+        "taxes": 0,
+        "bankCharges": 2363.03,
+        "platformCommission": 0,
+        "deliveryToForwarder": 4549.77
+      },
+      "payments": {
+        "supplier": 74218.12,
+        "forwarder": 0
+      },
+      "id": "b299b6d5-26b9-40b7-be45-0bcb4ad5e22f",
+      "createdAt": "2025-06-18T14:22:56.568Z",
+      "updatedAt": "2025-06-18T14:22:56.568Z"
+    },
+    {
+      "supplierId": "17e440b4-18ed-4dd5-8b4c-a06460086807",
+      "forwarderId": "1923f688-ef13-4f17-8279-79f5379c4caf",
+      "products": [
+        {
+          "name": "sac à couches sac à dos pour maman papa grand voyage couche fourre-tout bébé sac",
+          "quantity": 15,
+          "unitPrice": 20000
+        }
+      ],
+      "status": "pending",
+      "costs": {
+        "purchase": 49478.74,
+        "shipping": 0,
+        "taxes": 0,
+        "bankCharges": 1569.67,
+        "platformCommission": 0,
+        "deliveryToForwarder": 2843.61
+      },
+      "payments": {
+        "supplier": 49478.74,
+        "forwarder": 0
+      },
+      "id": "a1fbdecb-0e93-4a3d-b1ce-3072b6d72a5e",
+      "createdAt": "2025-06-18T14:29:02.319Z",
+      "updatedAt": "2025-06-18T14:29:02.319Z"
+    },
+    {
+      "supplierId": "e119d794-d7fd-409d-a1a4-eb6d5b29a7be",
+      "forwarderId": "1923f688-ef13-4f17-8279-79f5379c4caf",
+      "products": [
+        {
+          "name": "hauffe-lait électrique de bonne qualité pour bébé Chauffe-biberon double professionnel avec stérilisateur pour bébé",
+          "quantity": 12,
+          "unitPrice": 20000
+        }
+      ],
+      "status": "pending",
+      "costs": {
+        "purchase": 60056.96,
+        "shipping": 0,
+        "taxes": 0,
+        "bankCharges": 1972.32,
+        "platformCommission": 0,
+        "deliveryToForwarder": 5687.21
+      },
+      "payments": {
+        "supplier": 60056.96,
+        "forwarder": 0
+      },
+      "id": "725d8848-76d3-4d66-ba74-e8081ea7662f",
+      "createdAt": "2025-06-18T14:34:44.408Z",
+      "updatedAt": "2025-06-18T14:41:04.890Z"
     }
   ]
 }
